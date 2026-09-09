@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Membros+ — Gestão de Membros</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            marca: {
+              50:'#eef3ff',100:'#d9e4ff',200:'#bcd0ff',300:'#8aadff',
+              400:'#5c83ff',500:'#3b6df0',600:'#2563EB',700:'#1d4fd4',
+              800:'#1E3A5F',900:'#162f50',950:'#0e1d35'
+            }
+          },
+          fontFamily: {
+            display: ['"Playfair Display"','Georgia','serif'],
+            body: ['"Source Sans 3"','system-ui','sans-serif']
+          },
+          boxShadow: {
+            card:'0 2px 12px rgba(30,58,95,.10)',
+            nav:'0 -4px 20px rgba(30,58,95,.10)',
+            pop:'0 8px 30px rgba(30,58,95,.18)'
+          },
+          borderRadius: { app:'32px', card:'16px' }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root{--safe-b:env(safe-area-inset-bottom,0px)}
+    *{-webkit-tap-highlight-color:transparent}
+    body{font-family:'Source Sans 3',system-ui,sans-serif;background:#cbd5e1}
+    ::-webkit-scrollbar{width:0;height:0}
+
+    @keyframes fadeSlide{
+      from{opacity:0;transform:translateY(14px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    [data-tela]:not(.hidden){animation:fadeSlide .32s ease-out}
+
+    .ativo{color:#2563EB!important}
+    .ativo svg{stroke:#2563EB!important;fill:#2563EB!important}
+
+    :focus-visible{outline:2px solid #2563EB;outline-offset:2px;border-radius:4px}
+
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 24px;border-radius:12px;font-family:'Source Sans 3',sans-serif;
+      font-weight:600;font-size:15px;cursor:pointer;border:none;
+      transition:all .18s ease;user-select:none
+    }
+    .btn:active{transform:scale(.96);filter:brightness(.92)}
+    .btn-p{background:#2563EB;color:#fff}
+    .btn-p:hover{background:#1d4fd4}
+    .btn-s{background:#eef3ff;color:#1E3A5F}
+    .btn-s:hover{background:#d9e4ff}
+    .btn-g{background:#f1f5f9;color:#334155}
+    .btn-g:hover{background:#e2e8f0}
+
+    .card{
+      background:#fff;border-radius:16px;
+      box-shadow:0 2px 12px rgba(30,58,95,.10);
+      transition:transform .2s ease,box-shadow .2s ease
+    }
+    .card:active{transform:scale(.985);box-shadow:0 1px 6px rgba(30,58,95,.08)}
+
+    .badge{
+      display:inline-flex;align-items:center;padding:3px 10px;
+      border-radius:20px;font-size:12px;font-weight:600
+    }
+
+    .toast-c{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:358px;pointer-events:none}
+    .toast-i{
+      padding:14px 18px;border-radius:14px;color:#fff;font-size:14px;font-weight:500;
+      display:flex;align-items:center;gap:10px;pointer-events:auto;
+      animation:tIn .3s ease-out;backdrop-filter:blur(8px)
+    }
+    .toast-i.sair{animation:tOut .25s ease-in forwards}
+    @keyframes tIn{from{opacity:0;transform:translateY(-16px) scale(.95)}to{opacity:1;transform:none}}
+    @keyframes tOut{to{opacity:0;transform:translateY(-16px) scale(.95)}}
+
+    #modal-bg{position:fixed;inset:0;background:rgba(15,30,55,.55);z-index:8000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s ease}
+    #modal-bg.aberto{opacity:1;pointer-events:auto}
+    #modal-bg .modal-c{background:#fff;width:100%;max-width:430px;max-height:82vh;border-radius:24px 24px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+    #modal-bg.aberto .modal-c{transform:none}
+
+    .pulse{animation:pulse 2.2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+    @media(min-width:431px){
+      #app-frame{max-width:390px;margin:0 auto;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0}
+    }
+  </style>
+</head>
+<body class="bg-slate-300 min-h-screen flex items-start sm:items-center justify-center">
+
+  <!-- ══════════ APARELHO ══════════ -->
+  <div id="app-frame" class="relative w-full max-w-[390px] bg-marca-800 sm:rounded-app sm:border-[6px] sm:border-slate-800 sm:shadow-2xl sm:my-6 overflow-hidden" style="min-height:100dvh;max-height:100dvh">
+
+    <!-- Barra de Status -->
+    <div class="bg-marca-800 flex items-center justify-between px-7 pt-[6px] pb-[2px] select-none shrink-0">
+      <span class="text-white/90 text-xs font-semibold tracking-wide">9:41</span>
+      <div class="flex items-center gap-[5px]">
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="5" width="3" height="7" rx=".8" fill="#fff" opacity=".4"/><rect x="4.5" y="3.5" width="3" height="8.5" rx=".8" fill="#fff" opacity=".6"/><rect x="9" y="1.5" width="3" height="10.5" rx=".8" fill="#fff" opacity=".8"/><rect x="13.5" y="0" width="2.5" height="12" rx=".8" fill="#fff"/><rect x="2" y="7" width="1.5" height="5" rx=".5" fill="#fff" opacity=".3"/><rect x="6.5" y="5.5" width="1.5" height="6.5" rx=".5" fill="#fff" opacity=".5"/><rect x="11" y="3.5" width="1.5" height="8.5" rx=".5" fill="#fff" opacity=".65"/></svg>
+        <svg width="14" height="12" viewBox="0 0 14 12" fill="none"><path d="M7 8.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="#fff" stroke-width="1.2" opacity=".9"/><path d="M10.5 3.8a6 6 0 0 1 1 4.2 6 6 0 0 1-1 4.2" stroke="#fff" stroke-width="1.2" opacity=".4"/></svg>
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="#fff" stroke-opacity=".35" stroke-width="1"/><rect x="2.5" y="2" width="18" height="9" rx="2" fill="#fff" opacity=".95"/><rect x="24" y="4.5" width="2" height="4" rx="1" fill="#fff" opacity=".55"/></svg>
+      </div>
+    </div>
+
+    <!-- Conteúdo -->
+    <main class="bg-marca-50 overflow-y-auto pb-[88px]" style="height:calc(100dvh - 34px)">
+
+      <!-- TELAS -->
+      <!-- TELAS -->
+
+    </main>
+
+    <!-- Navegação Inferior -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/70 flex justify-around items-center px-2 pb-[calc(8px+var(--safe-b))] pt-1.5 z-50" style="box-shadow:0 -4px 20px rgba(30,58,95,.10)">
+
+      <button data-nav="principal" onclick="mostrarTela('principal')" class="flex flex-col items-center gap-[3px] py-1.5 px-3 transition-colors duration-200 text-slate-400">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="text-[10px] font-semibold">Início</span>
+      </button>
+
+      <button data-nav="catalogo" onclick="mostrarTela('catalogo')" class="flex flex-col items-center gap-[3px] py-1.5 px-3 transition-colors duration-200 text-slate-400">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span class="text-[10px] font-semibold">Catálogo</span>
+      </button>
+
+      <button data-nav="ministerios" onclick="mostrarTela('ministerios')" class="flex flex-col items-center gap-[3px] py-1.5 px-3 transition-colors duration-200 text-slate-400">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="text-[10px] font-semibold">Ministérios</span>
+      </button>
+
+      <button data-nav="perfil" onclick="mostrarTela('perfil')" class="flex flex-col items-center gap-[3px] py-1.5 px-3 transition-colors duration-200 text-slate-400">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="text-[10px] font-semibold">Perfil</span>
+      </button>
+
+    </nav>
+  </div>
+
+  <!-- ══════════ TOASTS ══════════ -->
+  <div id="toast-c" class="toast-c"></div>
+
+  <!-- ══════════ MODAL ══════════ -->
+  <div id="modal-bg" onclick="fecharModal(event)">
+    <div class="modal-c" id="modal-card">
+      <div class="flex items-center justify-between p-5 border-b border-slate-100">
+        <h3 id="modal-titulo" class="font-display text-lg font-bold text-marca-800"></h3>
+        <button onclick="fecharModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="modal-body" class="p-5 overflow-y-auto flex-1"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ UTILITÁRIOS ══════════ -->
+  <script>
+    function mostrarTela(id) {
+      document.querySelectorAll('[data-tela]').forEach(function(s) {
+        s.classList.toggle('hidden', s.dataset.tela !== id);
+      });
+      document.querySelectorAll('[data-nav]').forEach(function(b) {
+        b.classList.toggle('ativo', b.dataset.nav === id);
+      });
+      window.scrollTo({ top: 0 });
+    }
+
+    function toast(msg, tipo) {
+      var c = document.getElementById('toast-c');
+      var el = document.createElement('div');
+      var cor, icone;
+      if (tipo === 'ok') {
+        cor = 'background:#059669'; icone = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else if (tipo === 'erro') {
+        cor = 'background:#dc2626'; icone = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      } else {
+        cor = 'background:#2563EB'; icone = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+      }
+      el.className = 'toast-i';
+      el.style.cssText = cor;
+      el.innerHTML = icone + '<span>' + msg + '</span>';
+      c.appendChild(el);
+      setTimeout(function() {
+        el.classList.add('sair');
+        setTimeout(function() { el.remove(); }, 260);
+      }, 3000);
+    }
+
+    function abrirModal(html, titulo) {
+      document.getElementById('modal-titulo').textContent = titulo || '';
+      document.getElementById('modal-body').innerHTML = html;
+      document.getElementById('modal-bg').classList.add('aberto');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function fecharModal(ev) {
+      if (ev && ev.target !== ev.currentTarget && !ev.target.closest('[onclick*=fecharModal]')) return;
+      document.getElementById('modal-bg').classList.remove('aberto');
+      document.body.style.overflow = '';
+    }
+
+    function brl(v) { return 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+
+    function dataBR(iso) {
+      if (!iso) return '—';
+      var p = iso.split('-');
+      return p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') fecharModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      mostrarTela('principal');
+    });
+  </script>
+
+</body>
+</html>
